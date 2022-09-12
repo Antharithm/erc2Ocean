@@ -6,7 +6,7 @@ module.exports = {
   solidity: "0.8.17",
   networks: {
     rinkeby: {
-      url: process.env.INFURA_RINK_ENDPOINT,
+      url: process.env.INFURA_RINKEBY_ENDPOINT,
       accounts: [process.env.PRIVATE_KEY]
     }
   }
