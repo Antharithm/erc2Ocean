@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.17;
 
-// interface of ERC20 token
 interface IERC20 {
-    function transfer(address to, uint256 amount) external view returns (bool);
+    function transfer(address to, uint256 amount) external returns (bool);
+
     function balanceOf(address account) external view returns (uint256);
+
     event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
@@ -12,10 +14,10 @@ contract Faucet {
     address payable owner;
     IERC20 public token;
 
-    uint256 public withdrawAmount = 50 * (10**18);
+    uint256 public withdrawalAmount = 50 * (10**18);
     uint256 public lockTime = 1 minutes;
 
-    event Withdraw(address indexed to, uint256 indexed amount);
+    event Withdrawal(address indexed to, uint256 indexed amount);
     event Deposit(address indexed from, uint256 indexed amount);
 
     mapping(address => uint256) nextAccessTime;
@@ -25,14 +27,13 @@ contract Faucet {
         owner = payable(msg.sender);
     }
 
-    // main function to request tokens from the Faucet
     function requestTokens() public {
         require(
             msg.sender != address(0),
             "Request must not originate from a zero account"
         );
         require(
-            token.balanceOf(address(this)) >= withdrawAmount,
+            token.balanceOf(address(this)) >= withdrawalAmount,
             "Insufficient balance in faucet for withdrawal request"
         );
         require(
@@ -42,7 +43,7 @@ contract Faucet {
 
         nextAccessTime[msg.sender] = block.timestamp + lockTime;
 
-        token.transfer(msg.sender, withdrawAmount);
+        token.transfer(msg.sender, withdrawalAmount);
     }
 
     receive() external payable {
@@ -53,22 +54,24 @@ contract Faucet {
         return token.balanceOf(address(this));
     }
 
-    function setWithdrawAmount(uint256 amount) public onlyOwner {
-        withdrawAmount = amount * (10**18);
+    function setWithdrawalAmount(uint256 amount) public onlyOwner {
+        withdrawalAmount = amount * (10**18);
     }
 
     function setLockTime(uint256 amount) public onlyOwner {
-        lockTime = amount * 1 minutes; // the interval that is needed before requesting new tokens
+        lockTime = amount * 1 minutes;
     }
 
     function withdraw() external onlyOwner {
-        emit Withdraw(msg.sender, token.balanceOf(address(this)));
+        emit Withdrawal(msg.sender, token.balanceOf(address(this)));
         token.transfer(msg.sender, token.balanceOf(address(this)));
     }
-        
+
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only the contract owner can call this function");
+        require(
+            msg.sender == owner,
+            "Only the contract owner can call this function"
+        );
         _;
     }
-
 }
